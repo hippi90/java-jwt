@@ -50,7 +50,7 @@ public final class JWTVerifier {
             }
 
             this.algorithm = algorithm;
-            this.claims = new HashMap<>();
+            this.claims = new HashMap<String, Object>();
             this.defaultLeeway = 0;
         }
 
@@ -364,33 +364,25 @@ public final class JWTVerifier {
 
     private void verifyClaims(DecodedJWT jwt, Map<String, Object> claims) throws TokenExpiredException, InvalidClaimException {
         for (Map.Entry<String, Object> entry : claims.entrySet()) {
-            switch (entry.getKey()) {
-                case PublicClaims.AUDIENCE:
-                    //noinspection unchecked
-                    assertValidAudienceClaim(jwt.getAudience(), (List<String>) entry.getValue());
-                    break;
-                case PublicClaims.EXPIRES_AT:
-                    assertValidDateClaim(jwt.getExpiresAt(), (Long) entry.getValue(), true);
-                    break;
-                case PublicClaims.ISSUED_AT:
-                    assertValidDateClaim(jwt.getIssuedAt(), (Long) entry.getValue(), false);
-                    break;
-                case PublicClaims.NOT_BEFORE:
-                    assertValidDateClaim(jwt.getNotBefore(), (Long) entry.getValue(), false);
-                    break;
-                case PublicClaims.ISSUER:
-                    assertValidStringClaim(entry.getKey(), jwt.getIssuer(), (String) entry.getValue());
-                    break;
-                case PublicClaims.JWT_ID:
-                    assertValidStringClaim(entry.getKey(), jwt.getId(), (String) entry.getValue());
-                    break;
-                case PublicClaims.SUBJECT:
-                    assertValidStringClaim(entry.getKey(), jwt.getSubject(), (String) entry.getValue());
-                    break;
-                default:
-                    assertValidClaim(jwt.getClaim(entry.getKey()), entry.getKey(), entry.getValue());
-                    break;
-            }
+            String key = entry.getKey();
+        	if (PublicClaims.AUDIENCE.equals(key)) {
+        		//noinspection unchecked
+                assertValidAudienceClaim(jwt.getAudience(), (List<String>) entry.getValue());
+        	} else if (PublicClaims.EXPIRES_AT.equals(key)) {
+        		assertValidDateClaim(jwt.getExpiresAt(), (Long) entry.getValue(), true);
+        	} else if (PublicClaims.ISSUED_AT.equals(key)) {
+        		assertValidDateClaim(jwt.getIssuedAt(), (Long) entry.getValue(), false);
+        	} else if (PublicClaims.NOT_BEFORE.equals(key)) {
+        		assertValidDateClaim(jwt.getNotBefore(), (Long) entry.getValue(), false);
+        	} else if (PublicClaims.ISSUER.equals(key)) {
+        		assertValidStringClaim(entry.getKey(), jwt.getIssuer(), (String) entry.getValue());
+        	} else if (PublicClaims.JWT_ID.equals(key)) {
+        		assertValidStringClaim(entry.getKey(), jwt.getId(), (String) entry.getValue());
+        	} else if (PublicClaims.SUBJECT.equals(key)) {
+        		assertValidStringClaim(entry.getKey(), jwt.getSubject(), (String) entry.getValue());
+        	} else {
+        		assertValidClaim(jwt.getClaim(entry.getKey()), entry.getKey(), entry.getValue());
+        	}
         }
     }
 

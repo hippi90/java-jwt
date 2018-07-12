@@ -10,8 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PayloadSerializer extends StdSerializer<ClaimsHolder> {
+	private static final long serialVersionUID = 433795276972311762L;
 
-    public PayloadSerializer() {
+	public PayloadSerializer() {
         this(null);
     }
 
@@ -21,33 +22,27 @@ public class PayloadSerializer extends StdSerializer<ClaimsHolder> {
 
     @Override
     public void serialize(ClaimsHolder holder, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        HashMap<Object, Object> safePayload = new HashMap<>();
+        HashMap<Object, Object> safePayload = new HashMap<Object, Object>();
         for (Map.Entry<String, Object> e : holder.getClaims().entrySet()) {
-            switch (e.getKey()) {
-                case PublicClaims.AUDIENCE:
-                    if (e.getValue() instanceof String) {
-                        safePayload.put(e.getKey(), e.getValue());
-                        break;
-                    }
-                    String[] audArray = (String[]) e.getValue();
-                    if (audArray.length == 1) {
-                        safePayload.put(e.getKey(), audArray[0]);
-                    } else if (audArray.length > 1) {
-                        safePayload.put(e.getKey(), audArray);
-                    }
+            if (PublicClaims.AUDIENCE.equals(e)) {
+            	if (e.getValue() instanceof String) {
+                    safePayload.put(e.getKey(), e.getValue());
                     break;
-                case PublicClaims.EXPIRES_AT:
-                case PublicClaims.ISSUED_AT:
-                case PublicClaims.NOT_BEFORE:
-                    safePayload.put(e.getKey(), dateToSeconds((Date) e.getValue()));
-                    break;
-                default:
-                    if (e.getValue() instanceof Date) {
-                        safePayload.put(e.getKey(), dateToSeconds((Date) e.getValue()));
-                    } else {
-                        safePayload.put(e.getKey(), e.getValue());
-                    }
-                    break;
+                }
+                String[] audArray = (String[]) e.getValue();
+                if (audArray.length == 1) {
+                    safePayload.put(e.getKey(), audArray[0]);
+                } else if (audArray.length > 1) {
+                    safePayload.put(e.getKey(), audArray);
+                }
+            } else if (PublicClaims.EXPIRES_AT.equals(e) || PublicClaims.ISSUED_AT.equals(e) || PublicClaims.NOT_BEFORE.equals(e)) {
+            	safePayload.put(e.getKey(), dateToSeconds((Date) e.getValue()));
+            } else {
+            	 if (e.getValue() instanceof Date) {
+                     safePayload.put(e.getKey(), dateToSeconds((Date) e.getValue()));
+                 } else {
+                     safePayload.put(e.getKey(), e.getValue());
+                 }
             }
         }
 
